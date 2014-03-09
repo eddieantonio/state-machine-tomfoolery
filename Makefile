@@ -22,4 +22,8 @@ diagram: states.pdf
 view: states.pdf
 	open $<
 
-.PHONY: all diagram view
+clean:
+	$(RM) $(MAIN) $(MAIN).o \
+		states.c states.dot states.pdf
+
+.PHONY: all clean diagram view
