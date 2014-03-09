@@ -1,8 +1,12 @@
 DOT = dot
 CREATE = ./create.rb
 
-# Main task is to view the states.pdf
-all: diagram
+MAIN = seqtype
+
+
+all: $(MAIN)
+
+$(MAIN).o: $(MAIN).c states.c
 
 
 %.pdf: %.dot

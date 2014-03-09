@@ -1,3 +1,5 @@
 *.dot
 *.pdf
 states.c
+*.o
+seqtype
