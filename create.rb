@@ -4,12 +4,14 @@
 # Creates a C and Graphviz files of states transitions.
 #
 
+require 'erb'
+require 'ostruct'
 require 'set'
 
 
-# The C header file.
+# The C header... thing.
 C_HEADER = <<EOF
-#define NULL 0
+#include <stdlib>
 
 enum accept {
     INVALID, RNA, DNA, PROTEIN
@@ -35,7 +37,24 @@ C = frozenset('C')
 GTA = frozenset('GTA')
 OPROTEIN = PROTEIN - DNA - RNA
 
-State = Struct.new(:accept, :transitions)
+State = Struct.new(:accept, :transitions) do
+    # This is a bad name for the method but I don't know what to call it.
+    def unwrap
+        result = {}
+
+        # Populate the hash with each transition.
+        transitions.each do | chars, target_num |
+            chars.each { | char | result[char] = target_num }
+        end
+
+        # Add all missing letters.
+        ('A'..'Z').each do | char |
+            result[char] = nil unless result.has_key? char
+        end
+
+        result.sort_by { |char, _|  char }
+    end
+end
 
 STATES = [
     # Initial state.
@@ -70,11 +89,16 @@ STATES = [
         OPROTEIN => 1
     })
 ]
-    
+
+
+
 def run!
-    write_dot_graph
+    write_c_file
 end
 
+
+
+# Prints a Graphviz/Dot graph file.
 def write_dot_graph
     def state_name(index)
         "S#{index}"
@@ -83,9 +107,9 @@ def write_dot_graph
     # Create a list of accepting state names.
     accepting = []
     STATES.each_with_index do |state, num|
-        accepting.push state_name(num) if state.accept != :invalid  
+        accepting.push state_name(num) if state.accept != :INVALID
     end
-    
+
     # Header with formatting options and accepting states.
     puts <<EOF
 digraph {
@@ -107,7 +131,17 @@ EOF
             puts "    #{start} -> #{target} [ label = \"#{chars}\"];"
         end
     end
+
     puts '}'
+
+end
+
+# Writes the C header file to stdout.
+def write_c_file
+    template_file = File.new('./states.c.erb').read
+    template = ERB.new(template_file, nil, '<>')
+    namespace = OpenStruct.new states: STATES
+    template.run namespace.instance_eval { binding }
 end
 
 run! if __FILE__ == $0
