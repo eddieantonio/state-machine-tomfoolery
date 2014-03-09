@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 
 #
-# Creates a C and Graphviz files of states transitions.
+# Creates a C and Graphviz files of states transitions for a FSM that
+# accepts strings of DNA, RNA, and protein base letters.
 #
 
 require 'erb'
@@ -9,21 +10,8 @@ require 'ostruct'
 require 'set'
 
 
-# The C header... thing.
-C_HEADER = <<EOF
-#include <stdlib>
-
-enum accept {
-    INVALID, RNA, DNA, PROTEIN
-};
-
-struct state {
-    enum accept accept;
-    struct state* transition[26];
-};
-EOF
-
-# Convert a string into a set of all of its elements.
+# Convert a string into a set of all of its elements. I might have stolen this
+# from Python.
 def frozenset(str)
     str.split('').to_set
 end
@@ -35,7 +23,7 @@ PROTEIN = frozenset('ACDEFGHIKLMNPQRSTVWYBZ')
 U = frozenset('U')
 C = frozenset('C')
 GTA = frozenset('GTA')
-OPROTEIN = PROTEIN - DNA - RNA
+OPROTEIN = PROTEIN - (DNA | RNA)
 
 State = Struct.new(:accept, :transitions) do
     # This is a bad name for the method but I don't know what to call it.
