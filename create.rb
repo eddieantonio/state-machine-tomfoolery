@@ -93,7 +93,11 @@ STATES = [
 
 
 def run!
-    write_c_file
+    unless ARGV.member? '-g'
+        write_c_file
+    else
+        write_dot_graph
+    end
 end
 
 
