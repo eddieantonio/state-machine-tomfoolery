@@ -1,0 +1,13 @@
+digraph {
+    rankdir=LR;
+
+    node [shape = doublecircle]
+<% for name, state in accepting_states %>
+    <%= name %> [ label = "<%= state.accept %>" ];
+<% end %>
+
+    node [shape = circle];
+<% for start, target, chars in transitions %>
+    <%= start %> -> <%= target %> [ label = "<%= chars %>"];
+<% end %>
+}
